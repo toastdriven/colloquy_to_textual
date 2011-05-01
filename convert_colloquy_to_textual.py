@@ -7,7 +7,7 @@ import sys
 
 
 __author__ = 'Daniel Lindsley'
-__version__ = (0, 2, 0)
+__version__ = (0, 2, 1)
 __license__ = 'New BSD'
 
 
@@ -87,8 +87,16 @@ class ColloquyConvertor(object):
         for message in element.message:
             date = parse(message.get('received'))
             ampm = 'AM'
+            hour = date.hour
             
-            if date.hour >= 12:
+            if date.hour > 12:
+                ampm = 'PM'
+                hour = hour - 12
+            
+            if date.hour == 0:
+                hour = 12
+            
+            if date.hour == 12:
                 ampm = 'PM'
             
             clean_message = self.clean_message(message)
@@ -96,7 +104,7 @@ class ColloquyConvertor(object):
                 'year': date.year,
                 'month': date.month,
                 'day': date.day,
-                'hour': date.hour,
+                'hour': hour,
                 'minute': date.minute,
                 'second': date.second,
                 'ampm': ampm,
@@ -109,8 +117,16 @@ class ColloquyConvertor(object):
     def parse_event(self, element):
         date = parse(element.get('occurred'))
         ampm = 'AM'
+        hour = date.hour
         
-        if date.hour >= 12:
+        if date.hour > 12:
+            ampm = 'PM'
+            hour = hour - 12
+        
+        if date.hour == 0:
+            hour = 12
+        
+        if date.hour == 12:
             ampm = 'PM'
         
         clean_message = self.clean_message(element.message)
@@ -118,7 +134,7 @@ class ColloquyConvertor(object):
             'year': date.year,
             'month': date.month,
             'day': date.day,
-            'hour': date.hour,
+            'hour': hour,
             'minute': date.minute,
             'second': date.second,
             'ampm': ampm,

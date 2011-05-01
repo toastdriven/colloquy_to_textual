@@ -8,7 +8,7 @@ This generates a ``converted`` directory that maps to Textual's layout &
 fills it with the converted logs.
 
 **License:** BSD  
-**Version:** 0.2.0
+**Version:** 0.2.1
 
 Todo
 ----
