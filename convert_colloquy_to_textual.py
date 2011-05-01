@@ -7,7 +7,7 @@ import sys
 
 
 __author__ = 'Daniel Lindsley'
-__version__ = (0, 1, 0)
+__version__ = (0, 2, 0)
 __license__ = 'New BSD'
 
 
@@ -36,6 +36,10 @@ class ColloquyConvertor(object):
         path = os.path.join(self.colloquy_dir, '*.colloquyTranscript')
         return glob.glob(path)
     
+    def get_private_list(self):
+        path = os.path.join(self.colloquy_dir, self.network, '*.colloquyTranscript')
+        return glob.glob(path)
+    
     def read_file(self, filename):
         log_file = open(filename, 'r')
         return objectify.parse(log_file)
@@ -43,7 +47,11 @@ class ColloquyConvertor(object):
     def get_new_transcript_path(self, old_transcript_filename):
         channel_details, ext = os.path.splitext(os.path.basename(old_transcript_filename))
         channel_name, date = channel_details.split(' ')
-        channel_dir = os.path.join(self.converted_path, channel_name)
+        channels_dir = os.path.join(self.converted_path, 'Channels')
+        channel_dir = os.path.join(channels_dir, channel_name)
+        
+        if not os.path.exists(channels_dir):
+            os.mkdir(channels_dir)
         
         if not os.path.exists(channel_dir):
             os.mkdir(channel_dir)
@@ -51,6 +59,22 @@ class ColloquyConvertor(object):
         month, day, year = date.split('-')
         log_filename = "20%02d-%02d-%02d.txt" % (int(year), int(month), int(day))
         return os.path.join(channel_dir, log_filename)
+    
+    def get_new_private_path(self, old_private_filename):
+        nick_details, ext = os.path.splitext(os.path.basename(old_private_filename))
+        nick, date = nick_details.split(' ')
+        queries_dir = os.path.join(self.converted_path, 'Queries')
+        query_dir = os.path.join(queries_dir, nick)
+        
+        if not os.path.exists(queries_dir):
+            os.mkdir(queries_dir)
+        
+        if not os.path.exists(query_dir):
+            os.mkdir(query_dir)
+        
+        month, day, year = date.split('-')
+        log_filename = "20%02d-%02d-%02d.txt" % (int(year), int(month), int(day))
+        return os.path.join(query_dir, log_filename)
     
     def clean_message(self, element):
         etree.strip_tags(element, 'span', 'samp', 'a')
@@ -120,15 +144,21 @@ class ColloquyConvertor(object):
                 print "Saw unrecognized tag '%s'. Continuing..." % element.tag
     
     def run(self):
-        transcripts = self.get_transcript_list()
-        
         if not os.path.exists(self.converted_path):
             os.mkdir(self.converted_path)
+        
+        transcripts = self.get_transcript_list()
+        privates = self.get_private_list()
         
         for transcript_filename in transcripts:
             old_log = self.read_file(transcript_filename)
             new_transcript_path = self.get_new_transcript_path(transcript_filename)
             self.write_updated(old_log, new_transcript_path)
+        
+        for private_filename in privates:
+            old_log = self.read_file(private_filename)
+            new_private_path = self.get_new_private_path(private_filename)
+            self.write_updated(old_log, new_private_path)
 
 
 if __name__ == '__main__':
